@@ -91,21 +91,21 @@ def predict_rating(user_id, anime_name, max_neighbor=10):
     return predicted_score
 
 
-# Get Recommendation
-# Recommend top n_anime for user x based on item collaborative filtering algorithm
-def get_recommendation(user_id, n_anime=10):
+# Recommendation
+# recommend the top n number of anime for user by item-based collaborative filtering algorithm
+def get_recommendation(user_id, n=10):
     print("For user", user_id, ",")
     predicted_rating = np.array([])
     
     for _anime in pivot_norm.index:
         predicted_rating = np.append(predicted_rating, predict_rating(user_id, _anime))
     
-    # Exclude the anime that the user has already rated
+    # exclude that rated by user
     temp = pd.DataFrame({'predicted':predicted_rating, 'name':pivot_norm.index})
     filtering = (pivot_norm[user_id] == 0.0)
     temp = temp.loc[filtering.values].sort_values(by='predicted', ascending=False)
 
-    # Recommend n_anime anime
-    return anime.loc[anime_ind.loc[temp.name[:n_anime]]]
+    # recommend n number of anime
+    return anime.loc[anime_ind.loc[temp.name[:n]]]
 
 print(get_recommendation(7777))
