@@ -1,45 +1,47 @@
+# https://www.kaggle.com/code/varian97/item-based-collaborative-filtering
+
 import numpy as np
 import pandas as pd
 import warnings
 from sklearn.metrics.pairwise import cosine_similarity
 warnings.filterwarnings('ignore')
 
-# Read the data
+# Read the csv data
 anime = pd.read_csv("anime.csv")
-print(anime.head())
+# print(anime.head())
 
 # only select tv show and movie
-print(anime.shape)
-anime = anime[(anime['type'] == 'TV') | (anime['type'] == 'Movie')]
-print(anime.shape)
+# print(anime.shape)
+anime = anime[(anime['type'] == 'TV') | (anime['type'] == 'Movie') | (anime['type'] == 'OVA') | (anime['type'] == 'ONA')]
+# print(anime.shape)
 
 # only select famous anime, 75% percentile
-m = anime['members'].quantile(0.75)
+m = anime['members'].quantile(0.25)
 anime = anime[(anime['members'] >= m)]
-print(anime.shape)
+# print(anime.shape)
 
 rating = pd.read_csv("rating.csv")
-print(rating.head())
+# print(rating.head())
 
-print(rating.shape)
+# print(rating.shape)
 
 
 
 # Replacing missing rating with NaN
 rating.loc[rating.rating == -1, 'rating'] = np.NaN
-print(rating.head())
+# print(rating.head())
 
 
 
 # Create index for anime name
 anime_index = pd.Series(anime.index, index=anime.name)
-print(anime_index.head())
+# print(anime_index.head())
 
 
 
 # Join the data
 joined = anime.merge(rating, how='inner', on='anime_id')
-print(joined.head())
+# print(joined.head())
 
 
 
@@ -47,37 +49,37 @@ print(joined.head())
 joined = joined[['user_id', 'name', 'rating_y']]
 
 pivot = pd.pivot_table(joined, index='name', columns='user_id', values='rating_y')
-print(pivot.head())
+# print(pivot.head())
 
-print(pivot.shape)
+# print(pivot.shape)
 
 
 
 # Drop all users that never rate an anime
 pivot.dropna(axis=1, how='all', inplace=True)
-print(pivot.head())
+# print(pivot.head())
 
-print(pivot.shape)
+# print(pivot.shape)
 
 
 
 # Center the mean around 0 (centered cosine / pearson)
 pivot_norm = pivot.apply(lambda x: x - np.nanmean(x), axis=1)
-print(pivot_norm.head())
+# print(pivot_norm.head())
 
 
 
 # Item Based Collaborative Filtering
 # fill NaN with 0
 pivot_norm.fillna(0, inplace=True)
-print(pivot_norm.head())
+# print(pivot_norm.head())
 
 
 
 # Calculate Similar Items
 # convert into dataframe to make it easier
 item_sim_df = pd.DataFrame(cosine_similarity(pivot_norm, pivot_norm), index=pivot_norm.index, columns=pivot_norm.index)
-print(item_sim_df.head())
+# print(item_sim_df.head())
 
 def get_similar_anime(anime_name):
     if anime_name not in pivot_norm.index:
@@ -88,8 +90,8 @@ def get_similar_anime(anime_name):
         return sim_animes, sim_score
 
 animes, score = get_similar_anime("Steins;Gate")
-for x,y in zip(animes[:10], score[:10]):
-    print("{} with similarity of {}".format(x, y))
+# for x,y in zip(animes[:10], score[:10]):
+    # print("{} with similarity of {}".format(x, y))
 
 
 
@@ -127,4 +129,5 @@ def get_recommendation(user_id, n_anime=10):
     # recommend n_anime anime
     return anime.loc[anime_index.loc[temp.name[:n_anime]]]
 
-get_recommendation(3)
+get_recommendation(107)
+print(get_recommendation(107))
