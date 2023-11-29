@@ -6,43 +6,35 @@ import warnings
 from sklearn.metrics.pairwise import cosine_similarity
 warnings.filterwarnings('ignore')
 
-# Read the csv data
+# Read the anime.csv
 anime = pd.read_csv("anime.csv")
 # print(anime.head())
 
-# only select tv show and movie
-# print(anime.shape)
+# Select TV, Movie, OVA, ONA
 anime = anime[(anime['type'] == 'TV') | (anime['type'] == 'Movie') | (anime['type'] == 'OVA') | (anime['type'] == 'ONA')]
-# print(anime.shape)
 
-# only select famous anime, 75% percentile
-m = anime['members'].quantile(0.25)
+# Select only famous anime, 75% percentile
+m = anime['members'].quantile(0.75)
 anime = anime[(anime['members'] >= m)]
-# print(anime.shape)
 
+# Read the anime.csv
 rating = pd.read_csv("rating.csv")
 # print(rating.head())
 
-# print(rating.shape)
 
-
-
-# Replacing missing rating with NaN
+# Replace missing rating with NaN
 rating.loc[rating.rating == -1, 'rating'] = np.NaN
 # print(rating.head())
 
 
-
-# Create index for anime name
+# Index for anime name
 anime_index = pd.Series(anime.index, index=anime.name)
 # print(anime_index.head())
-
 
 
 # Join the data
 joined = anime.merge(rating, how='inner', on='anime_id')
 # print(joined.head())
-
 
 
 # Create a pivot table
@@ -51,16 +43,10 @@ joined = joined[['user_id', 'name', 'rating_y']]
 pivot = pd.pivot_table(joined, index='name', columns='user_id', values='rating_y')
 # print(pivot.head())
 
-# print(pivot.shape)
-
-
 
 # Drop all users that never rate an anime
 pivot.dropna(axis=1, how='all', inplace=True)
 # print(pivot.head())
-
-# print(pivot.shape)
-
 
 
 # Center the mean around 0 (centered cosine / pearson)
@@ -68,12 +54,10 @@ pivot_norm = pivot.apply(lambda x: x - np.nanmean(x), axis=1)
 # print(pivot_norm.head())
 
 
-
 # Item Based Collaborative Filtering
 # fill NaN with 0
 pivot_norm.fillna(0, inplace=True)
 # print(pivot_norm.head())
-
 
 
 # Calculate Similar Items
@@ -88,11 +72,6 @@ def get_similar_anime(anime_name):
         sim_animes = item_sim_df.sort_values(by=anime_name, ascending=False).index[1:]
         sim_score = item_sim_df.sort_values(by=anime_name, ascending=False).loc[:, anime_name].tolist()[1:]
         return sim_animes, sim_score
-
-animes, score = get_similar_anime("Steins;Gate")
-# for x,y in zip(animes[:10], score[:10]):
-    # print("{} with similarity of {}".format(x, y))
-
 
 
 # Helper Function
@@ -112,10 +91,10 @@ def predict_rating(user_id, anime_name, max_neighbor=10):
     return s
 
 
-
 # Get Recommendation
 # recommend top n_anime for user x based on item collaborative filtering algorithm
 def get_recommendation(user_id, n_anime=10):
+    print("For user", user_id, ",")
     predicted_rating = np.array([])
     
     for _anime in pivot_norm.index:
@@ -129,5 +108,4 @@ def get_recommendation(user_id, n_anime=10):
     # recommend n_anime anime
     return anime.loc[anime_index.loc[temp.name[:n_anime]]]
 
-get_recommendation(107)
-print(get_recommendation(107))
+print(get_recommendation(3))
