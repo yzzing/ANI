@@ -16,30 +16,30 @@ print(anime.shape)
 # only select famous anime, 75% percentile
 m = anime['members'].quantile(0.75)
 anime = anime[(anime['members'] >= m)]
-anime.shape
+print(anime.shape)
 
 rating = pd.read_csv("rating.csv")
-rating.head()
+print(rating.head())
 
-rating.shape
+print(rating.shape)
 
 
 
 # Replacing missing rating with NaN
 rating.loc[rating.rating == -1, 'rating'] = np.NaN
-rating.head()
+print(rating.head())
 
 
 
 # Create index for anime name
 anime_index = pd.Series(anime.index, index=anime.name)
-anime_index.head()
+print(anime_index.head())
 
 
 
 # Join the data
 joined = anime.merge(rating, how='inner', on='anime_id')
-joined.head()
+print(joined.head())
 
 
 
@@ -47,37 +47,37 @@ joined.head()
 joined = joined[['user_id', 'name', 'rating_y']]
 
 pivot = pd.pivot_table(joined, index='name', columns='user_id', values='rating_y')
-pivot.head()
+print(pivot.head())
 
-pivot.shape
+print(pivot.shape)
 
 
 
 # Drop all users that never rate an anime
 pivot.dropna(axis=1, how='all', inplace=True)
-pivot.head()
+print(pivot.head())
 
-pivot.shape
+print(pivot.shape)
 
 
 
 # Center the mean around 0 (centered cosine / pearson)
 pivot_norm = pivot.apply(lambda x: x - np.nanmean(x), axis=1)
-pivot_norm.head()
+print(pivot_norm.head())
 
 
 
 # Item Based Collaborative Filtering
 # fill NaN with 0
 pivot_norm.fillna(0, inplace=True)
-pivot_norm.head()
+print(pivot_norm.head())
 
 
 
 # Calculate Similar Items
 # convert into dataframe to make it easier
 item_sim_df = pd.DataFrame(cosine_similarity(pivot_norm, pivot_norm), index=pivot_norm.index, columns=pivot_norm.index)
-item_sim_df.head()
+print(item_sim_df.head())
 
 def get_similar_anime(anime_name):
     if anime_name not in pivot_norm.index:
@@ -108,8 +108,6 @@ def predict_rating(user_id, anime_name, max_neighbor=10):
             / np.sum(sim_arr[filtering][:max_neighbor])
     
     return s
-
-predict_rating(3, "Steins;Gate")
 
 
 
