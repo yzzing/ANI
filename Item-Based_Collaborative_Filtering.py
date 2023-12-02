@@ -1,5 +1,3 @@
-# https://www.kaggle.com/code/varian97/item-based-collaborative-filtering
-
 import numpy as np
 import pandas as pd
 import warnings
@@ -109,3 +107,5 @@ def get_recommendation(user_id, n=10):
     return anime.loc[anime_ind.loc[temp.name[:n]]]
 
 print(get_recommendation(7777))
+
+# Reference: https://www.kaggle.com/code/varian97/item-based-collaborative-filtering
