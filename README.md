@@ -1,7 +1,7 @@
 # ANI
 
 content-based filtering
-- ML010.py
+- ML010.ipynb
 - train_script.py
 
 item-based filtering
