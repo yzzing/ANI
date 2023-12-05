@@ -1,11 +1,11 @@
 # ANI
 
 content-based filtering
-- ML010.ipynb
+- ML010.py
 - train_script.py
 
 item-based filtering
-- ML010-item.ipynb
+- ML010-item.py
 - item_train_script.py
 
 just test for hybrid
